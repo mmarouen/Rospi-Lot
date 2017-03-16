@@ -23,7 +23,7 @@ cd ~
 git clone https://gitlab.com/bradanlane/py-locoro.git
 cd py-locoro
 ```
-See `https://gitlab.com/bradanlane/py-locoro` and `http://stemroller.com` for more information on the LoCoRo project.
+See [https://gitlab.com/bradanlane/py-locoro](https://gitlab.com/bradanlane/py-locoro) and [http://stemroller.com](http://stemroller.com) for more information on the LoCoRo project.
 
 
 ## API Programming Documentation
