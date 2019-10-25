@@ -11,19 +11,28 @@ from std_msgs.msg           import String
 from sensor_msgs.msg        import Image
 from cv_bridge              import CvBridge, CvBridgeError
 
-class ImageProcessor():
+class LaneFinder():
     """
-    pre-processing on received image
+    Gets the raw image from the camera and returns a binary image containing lanes information
+    Subscribes to
+        /raspicam_node/image
+    Publishes
+        /perception/lanes 
     """
     def __init__(self):
         rospy.loginfo("Setting up the node ...")
 
-        rospy.init_node("image_processor")
+        rospy.init_node("lane_finder")
         self.bridge = CvBridge()
         self.image = np.zeros((400,220,1), np.uint8)
+
         #--- Create the subscriber to the /raspicam topic
         self.image_sub = rospy.Subscriber("/raspicam_node/image",Image,self.callback)
         rospy.loginfo("> Subscriber correctly initialized")
+
+        #--- Create the publisher
+        self._ros_pub_lanes = rospy.Publisher("/perception/lanes",Image,queue_size=1)
+        rospy.loginfo("> Publisher correctly initialized")
     
     def callback(self,data):
         #--- Assuming image is 320x240
@@ -34,12 +43,8 @@ class ImageProcessor():
         self.image = cv_image
 
     def process_image(self,t):
-        txt='/home/ubuntu/catkin_ws/catkin_ws/src/image_processor/images/'+str(t)+'.png'
-        #txt='../images/'+str(t)+'.png'
-        #cv2.imshow(str(t),self.image)
-        # cv2.waitKey(0)
-        #cv2.destroyAllWindows()
-        path=os.path.join(os.path.expanduser('~'),'catkin_ws','src','image_processor','images',str(t)+'.png')
+        
+        path=os.path.join(os.path.expanduser('~'),'catkin_ws','src','perception','image_processor','images',str(t)+'.png')
         print(path)
         res=cv2.imwrite(path, self.image)
 
