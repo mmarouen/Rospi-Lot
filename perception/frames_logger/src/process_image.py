@@ -13,9 +13,10 @@ from cv_bridge              import CvBridge, CvBridgeError
 
 class FramesLogger():
     """
-    Captures frames from the camera at 0.4 hz
+    Captures different frames at 0.4 hz and stores to disk
     Subscribes to
         /raspicam_node/image
+        /perception/lanes
     """
     def __init__(self):
         rospy.loginfo("Setting up the node ...")
@@ -23,8 +24,10 @@ class FramesLogger():
         rospy.init_node("frames_logger")
         self.bridge = CvBridge()
         self.image = np.zeros((400,220,1), np.uint8)
+        self.lanes = np.zeros((400,220,1), np.uint8)
         #--- Create the subscriber to the /raspicam topic
         self.image_sub = rospy.Subscriber("/raspicam_node/image",Image,self.callback)
+        self.lanes_sub = rospy.Subscriber("/perception/lanes",Image,self.callback2)
         rospy.loginfo("> Subscriber correctly initialized")
     
     def callback(self,data):
@@ -35,18 +38,20 @@ class FramesLogger():
             print(e)
         self.image = cv_image
 
-    def process_image(self,t):
-        txt='/home/ubuntu/catkin_ws/catkin_ws/src/frames_logger/images/'+str(t)+'.png'
-        #txt='../images/'+str(t)+'.png'
-        #cv2.imshow(str(t),self.image)
-        # cv2.waitKey(0)
-        #cv2.destroyAllWindows()
-        path=os.path.join(os.path.expanduser('~'),'catkin_ws','src','perception','frames_logger','images',str(t)+'.png')
-        print(path)
-        res=cv2.imwrite(path, self.image)
+    def callback2(self,data):
+        #--- Assuming image is 320x240
+        try:
+            cv_image = self.bridge.imgmsg_to_cv2(data)
+        except CvBridgeError as e:
+            print(e)
+        self.lanes = cv_image
 
-        #res=cv2.imwrite(txt,self.image)
-        print("res "+str(res))
+    def log_image(self,t):
+        path_image=os.path.join(os.path.expanduser('~'),'catkin_ws','src','perception','frames_logger','images',str(t)+'_image.png')
+        res=cv2.imwrite(path_image, self.image)
+        path_lanes=os.path.join(os.path.expanduser('~'),'catkin_ws','src','perception','frames_logger','images',str(t)+'_lanes.png')
+        res=cv2.imwrite(path_lanes, self.lanes)
+        #print("res "+str(res))
     
     def run(self):
 
@@ -56,7 +61,7 @@ class FramesLogger():
         duration = 10#in s
         while (time.time()-start<duration):
             t=int(time.time())
-            self.process_image(t)
+            self.log_image(t)
             rate.sleep()
 
 """
