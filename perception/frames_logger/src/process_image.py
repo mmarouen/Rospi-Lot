@@ -41,7 +41,7 @@ class FramesLogger():
     def callback2(self,data):
         #--- Assuming image is 320x240
         try:
-            cv_image = self.bridge.imgmsg_to_cv2(data)
+            cv_image = self.bridge.imgmsg_to_cv2(data,desired_encoding="mono8")
         except CvBridgeError as e:
             print(e)
         self.lanes = cv_image
@@ -49,16 +49,17 @@ class FramesLogger():
     def log_image(self,t):
         path_image=os.path.join(os.path.expanduser('~'),'catkin_ws','src','perception','frames_logger','images',str(t)+'_image.png')
         res=cv2.imwrite(path_image, self.image)
+        print("raw image "+str(res))
         path_lanes=os.path.join(os.path.expanduser('~'),'catkin_ws','src','perception','frames_logger','images',str(t)+'_lanes.png')
         res=cv2.imwrite(path_lanes, self.lanes)
-        #print("res "+str(res))
+        print("lanes image "+str(res))
     
     def run(self):
 
         #- set the control rate
         rate = rospy.Rate(0.4)
         start=time.time()
-        duration = 10#in s
+        duration = 30#in s
         while (time.time()-start<duration):
             t=int(time.time())
             self.log_image(t)
