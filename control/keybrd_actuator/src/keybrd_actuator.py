@@ -36,7 +36,7 @@ class DkLowLevelCtrl():
     def __init__(self):
         rospy.loginfo("Setting up the node ...")
 
-        rospy.init_node("dk_llc")
+        rospy.init_node("kbrd_act")
 
         #--- Create an actuator dictionary
         self.actuators = {}

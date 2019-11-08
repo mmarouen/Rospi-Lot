@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>donkey_llc</name>
+  <name>keybrd_actuator</name>
   <version>0.0.0</version>
-  <description>The donkey_llc package</description>
+  <description>An actuator which reads in commands from joystick or keyboard and outputs a servos message</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
