@@ -1,4 +1,4 @@
-# Rospi-ADkit
+# Rospi-Lot
 Inspired by comma.ai OpenPilot idea, this is an AD Autopilot on RaspberryPi based on ROS called RosPilot. The project currently performs lane follow feature.
 The codebase is written to be modular, enable quick prototyping and facilitate learning and collaboration across multiple users.
 The hardware used so far is the donkey car robocar + RPI 3 
