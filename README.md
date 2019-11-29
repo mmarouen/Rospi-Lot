@@ -1,2 +1,2 @@
-# Rospi-ADkit
-Autonomous Driving Kit on RaspberryPi based on ROS
+# Rospi-Lot
+Autonomous Driving Pilot on RaspberryPi based on ROS
