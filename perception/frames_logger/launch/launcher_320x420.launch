@@ -16,5 +16,20 @@
 
     <param name="framerate" value="20"/>
   </node>
+
+  <node pkg="lane_finder" name="lane_finder" type="lanes_finder" ns="/perception/lanes">
+    <param name="thd" value="220"/>
+    <param name="roiHeight" value="100"/>
+    <param name="roiWidth" value="200"> 
+  /node>
+
+  <node pkg="frames_logger" name="logger" type="process_image.py" ns="/perception/logger" />
+
+  <node pkg="trajectory_generator" name="planner" type ="trajectory_generator" ns ="planning/trajectory">
+    <param name="speed" value="220"/>
+    <param name="roiHeight" value="100"/>
+  </node>
+
+  <node pkg="pid_controller" name="controller" type="pid_controller" ns="control/pid"/>
   
 </launch>
