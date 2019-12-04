@@ -1,0 +1,20 @@
+<package format="2">
+  <name>lane_finder</name>
+  <version>0.0.1</version>
+  <description>
+  Returns a binary image with lane locations
+  </description>
+  <maintainer email="azzouz.marouen@gmail.com">Marouen Azzouz</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>rospy</build_depend>
+
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>rospy</exec_depend>
+</package>
+
