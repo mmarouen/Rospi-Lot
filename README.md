@@ -17,4 +17,3 @@ The hardware used so far is the donkey car robocar + RPI 3
 
 ## Further details
 Please let me know <azzouz.marouen@gmail.com>
-
