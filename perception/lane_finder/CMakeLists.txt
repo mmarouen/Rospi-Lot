@@ -5,13 +5,14 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   roscpp
   rospy
-  OpenCV
   image_transport
 )
 
 catkin_package()
 
-find_package(OpenCV)
+#find_package(OpenCV)
+find_package( OpenCV REQUIRED )
+
 #include_directories(${OpenCV_INCLUDE_DIRS})
 #target_link_libraries(my_awesome_library ${OpenCV_LIBRARIES})
 
