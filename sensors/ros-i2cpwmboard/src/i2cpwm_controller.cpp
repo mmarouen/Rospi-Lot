@@ -1590,7 +1590,7 @@ int main (int argc, char **argv)
 	ros::ServiceServer mode_srv =		n.advertiseService 	("config_drive_mode",			config_drive_mode);		// 'mode' specifies which servos are used for motion and which behavior will be applied when driving
 	ros::ServiceServer stop_srv =		n.advertiseService 	("stop_servos", 				stop_servos);			// the 'stop' service can be used at any time
 
-	ros::Subscriber abs_sub = 			n.subscribe 		("servos_absolute", 500, 		servos_absolute);		// the 'absolute' topic will be used for standard servo motion and testing of continuous servos
+	ros::Subscriber abs_sub = 			n.subscribe 		("/control/pid/servos_absolute", 500, 		servos_absolute);		// the 'absolute' topic will be used for standard servo motion and testing of continuous servos
 	ros::Subscriber rel_sub = 			n.subscribe 		("servos_proportional", 500, 	servos_proportional);	// the 'proportion' topic will be used for standard servos and continuous rotation aka drive servos
 	ros::Subscriber drive_sub = 		n.subscribe 		("servos_drive", 500, 			servos_drive);			// the 'drive' topic will be used for continuous rotation aka drive servos controlled by Twist messages
 	
