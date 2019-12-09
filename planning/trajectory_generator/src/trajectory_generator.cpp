@@ -63,14 +63,20 @@ void generateHeading(cv_bridge::CvImagePtr& imgptr)
     //fit line
     std::vector<cv::Point> pts;
     pts = flatten(contours);
-    cv::Vec4f line;
-    cv::fitLine(pts,line,1,2,0.01,0.01);
-    //find heading points O,M,C
-    cv::Point O(imgSize.width*0.5,imgSize.height);
-    cv::Point C(imgSize.width*0.5,imgSize.height-roiHeight);
-    cv::Point M(line[2]+(imgSize.height-roiHeight-line[3])*line[0]/line[1],imgSize.height-roiHeight);
-    //generate heading
-    float yaw=-atan2(M.x-C.x,roiHeight);
+    if(pts.size()>0){
+        cv::Vec4f line;
+        cv::fitLine(pts,line,1,2,0.01,0.01);
+        //find heading points O,M,C
+        cv::Point O(imgSize.width*0.5,imgSize.height);
+        cv::Point C(imgSize.width*0.5,imgSize.height-roiHeight);
+        cv::Point M(line[2]+(imgSize.height-roiHeight-line[3])*line[0]/line[1],imgSize.height-roiHeight);
+        //generate heading
+        yaw=-atan2(M.x-C.x,roiHeight);
+        std::cout<<"found points, yaw:"<<yaw<<std::endl;
+    }else{
+        std::cout<<"no points found, yaw:"<<yaw<<std::endl;
+
+    }
 }
 
 int main (int argc, char **argv)
@@ -79,16 +85,16 @@ int main (int argc, char **argv)
 
 	ros::NodeHandle n;
     ros::NodeHandle n_params("~");
-    n_params.param("speed", speed, (float)250);
+    n_params.param("speed", speed, (float)360);
     n_params.param("roiHeight", roiHeight, (int)100);
 
-	ros::Subscriber lanes_sub = n.subscribe("lanes", 1,lane_callback);	
+	ros::Subscriber lanes_sub = n.subscribe("/perception/lanes/lanes", 1,lane_callback);	
     ROS_INFO("> Trajectory subscriber correctly initialized");
 	ros::Publisher pub_vel = n.advertise<geometry_msgs::Twist>("cmd_vel",1);
     ROS_INFO("> Trajectory publisher correctly initialized");
     
     ros::Rate loop_rate(1);
-    int duration =20;
+    int duration =30;
     time_t current=time(NULL);
     geometry_msgs::Twist vel_msg;
 
