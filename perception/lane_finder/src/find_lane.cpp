@@ -87,11 +87,20 @@ void processImage(cv_bridge::CvImagePtr& imgptr)
     //detect contours
     std::vector<std::vector<cv::Point> > contours;
     cv::findContours(roiImage,contours,cv::RETR_LIST,cv::CHAIN_APPROX_SIMPLE,offset);
-    std::vector<cv::Point> pts1;
-    pts1 = flatten(contours);
     //lane image
     cv::Mat res=cv::Mat::zeros(processedIm.size(), CV_8UC1);
     cv::drawContours(res,contours,-1,cv::Scalar(255),1);
+    //draw angle position (if debug)
+    /*
+    std::vector<cv::Point> pts1;
+    pts1 = flatten(contours);
+    cv::Vec4f line;
+    cv::fitLine(pts1,line,1,2,0.01,0.01);
+    cv::Point C(imgSize.width*0.5,imgSize.height-roiHeight);
+    cv::Point M(line[2]+(imgSize.height-roiHeight-line[3])*line[0]/line[1],imgSize.height-roiHeight);
+    float heading=-atan2(M.x-C.x,roiHeight);
+    cv::drawMarker(res,M,cv::Scalar(255),cv::MARKER_TILTED_CROSS,10);
+    */
     imgptr->image = res;
 }
 
@@ -112,7 +121,7 @@ int main (int argc, char **argv)
     
     ros::Rate loop_rate(1);
     int count = 0;
-    int duration =20;
+    int duration =30;
     time_t current=time(NULL);
 
     while (time(NULL)-current<duration)
