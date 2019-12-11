@@ -31,8 +31,9 @@ float current_alpha=0;
 double last_time=0;
 double integral_init=0;
 double last_error =0;
-float center_val=330;
+float steering_center_val;
 float range=90;
+int duration;
 
 void yaw_callback(const geometry_msgs::Twist& msg)
 {
@@ -61,6 +62,9 @@ int main (int argc, char **argv)
 	ros::init (argc, argv, "pid_controller");
 
 	ros::NodeHandle n;
+    ros::NodeHandle n_params("~");
+    n_params.param("duration", duration, (int)30);
+    ros::param::get("/control/pid/centerSteering",steering_center_val);
 
 	ros::Subscriber lanes_sub = n.subscribe("/planning/trajectory/cmd_vel", 1,yaw_callback);	
     ROS_INFO("> Pid subscriber correctly initialized");
@@ -68,7 +72,6 @@ int main (int argc, char **argv)
     ROS_INFO("> Pid publisher correctly initialized");
     
     ros::Rate loop_rate(1);
-    int duration =30;
     time_t current=time(NULL);
     while (time(NULL)-current<duration)
     {
@@ -81,7 +84,7 @@ int main (int argc, char **argv)
             throttle.value = twist.linear.x;
             i2cpwm_board::Servo steering;
             steering.servo =2;
-            float servo2 = current_alpha*0.5*range+center_val;
+            float servo2 = current_alpha*0.5*range+steering_center_val;
             if(servo2>378) servo2=378;
             if(servo2<288) servo2=288;
             steering.value = servo2;
@@ -92,6 +95,9 @@ int main (int argc, char **argv)
         }
         ros::spinOnce();
         loop_rate.sleep();
+    }
+    if(time(NULL)-current>=duration){
+        ros::shutdown();
     }
   return 0;
 }
