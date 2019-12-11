@@ -26,8 +26,8 @@ Publishes
 */
 
 cv_bridge::CvImagePtr imageptr;
-float speed;
-int roiHeight;
+float speed,idleSpeed;
+int roiHeight,duration;
 float yaw;
 
 template<typename T>
@@ -74,6 +74,7 @@ void generateHeading(cv_bridge::CvImagePtr& imgptr)
         yaw=-atan2(M.x-C.x,roiHeight);
         std::cout<<"found points, yaw:"<<yaw<<std::endl;
     }else{
+        yaw=0.0;
         std::cout<<"no points found, yaw:"<<yaw<<std::endl;
 
     }
@@ -85,8 +86,11 @@ int main (int argc, char **argv)
 
 	ros::NodeHandle n;
     ros::NodeHandle n_params("~");
-    n_params.param("speed", speed, (float)360);
-    n_params.param("roiHeight", roiHeight, (int)100);
+    n_params.param("duration", duration, (int)30);
+
+    ros::param::get("/perception/lanes/roiHeight",roiHeight);
+    ros::param::get("/planning/trajectory/cruiseSpeed",speed);
+    ros::param::get("/planning/trajectory/idleSpeed",idleSpeed);
 
 	ros::Subscriber lanes_sub = n.subscribe("/perception/lanes/lanes", 1,lane_callback);	
     ROS_INFO("> Trajectory subscriber correctly initialized");
@@ -94,13 +98,13 @@ int main (int argc, char **argv)
     ROS_INFO("> Trajectory publisher correctly initialized");
     
     ros::Rate loop_rate(1);
-    int duration =30;
     time_t current=time(NULL);
     geometry_msgs::Twist vel_msg;
 
     while (time(NULL)-current<duration)
     {
-        if(imageptr){
+        if(imageptr){        
+            std::cout<<"time running"<<std::endl;
             generateHeading(imageptr);
             vel_msg.linear.x=speed;
             vel_msg.angular.z=yaw*180/CV_PI;
@@ -108,6 +112,13 @@ int main (int argc, char **argv)
         }
         ros::spinOnce();
         loop_rate.sleep();
+    }
+    if(time(NULL)-current>=duration){
+        std::cout<<"time is up!"<<std::endl;
+        vel_msg.linear.x=idleSpeed;
+        vel_msg.angular.z=0.0;
+        pub_vel.publish(vel_msg);
+        ros::shutdown();
     }
 
   return 0;

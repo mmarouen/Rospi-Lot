@@ -31,7 +31,7 @@ cv_bridge::CvImagePtr imageptr;
 //int thd = 220;
 //int roiHeight = 100;
 //int roiWidth = 200;
-int thd, roiHeight, roiWidth;
+int thd, roiHeight, roiWidth, duration;
 
 std::vector<cv::Point> flatten(const std::vector<std::vector<cv::Point> > &orig)
 {   
@@ -109,10 +109,11 @@ int main (int argc, char **argv)
 	ros::init (argc, argv, "find_lane");
 
 	ros::NodeHandle n;
+    ros::param::get("/perception/lanes/roiHeight",roiHeight);
+    ros::param::get("/perception/lanes/roiWidth",roiWidth);
+    ros::param::get("/perception/lanes/thd",thd);
     ros::NodeHandle n_params("~");
-    n_params.param("thd", thd, (int)220);
-    n_params.param("roiHeight", roiHeight, (int)100);
-    n_params.param("roiWidth", roiWidth, (int)200);
+    n_params.param("duration", duration, (int)30);
 
 	ros::Subscriber image_sub = n.subscribe("/raspicam_node/image", 1,image_callback);	
     ROS_INFO("> Lane subscriber correctly initialized");
@@ -121,7 +122,7 @@ int main (int argc, char **argv)
     
     ros::Rate loop_rate(1);
     int count = 0;
-    int duration =30;
+    //int duration =30;
     time_t current=time(NULL);
 
     while (time(NULL)-current<duration)
@@ -135,6 +136,9 @@ int main (int argc, char **argv)
         ros::spinOnce();
         loop_rate.sleep();
         count++;
+    }
+    if(time(NULL)-current>=duration){
+        ros::shutdown();
     }
 
   return 0;
