@@ -48,7 +48,7 @@ class DkLowLevelCtrl():
         self._servo_msg = ServoArray()
         for i in range(2):
             self._servo_msg.servos.append(Servo())
-        self._ros_pub_servo_array = rospy.Publisher("/servos_absolute",ServoArray,queue_size=1)
+        self._ros_pub_servo_array = rospy.Publisher("servos_absolute",ServoArray,queue_size=1)
         rospy.loginfo("> Publisher correctly initialized")
 
         #--- Create the subscriber to the /cmd_vel topic
