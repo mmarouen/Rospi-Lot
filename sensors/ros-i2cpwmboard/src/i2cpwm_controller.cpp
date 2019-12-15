@@ -401,7 +401,6 @@ static void _set_pwm_frequency (int freq)
     int prescale;
     char oldmode, newmode;
     int res;
-
     _pwm_frequency = freq;   // save to global
     
 	ROS_DEBUG("_set_pwm_frequency prescale");
@@ -728,7 +727,6 @@ static void _init (const char* filename)
 		_servo_configs[i].mode_pos = -1;
 	}
 	_last_servo = -1;
-
 	_active_drive.mode = MODE_UNDEFINED;
 	_active_drive.rpm = -1.0;
 	_active_drive.radius = -1.0;
@@ -808,7 +806,7 @@ void servos_absolute (const i2cpwm_board::ServoArray::ConstPtr& msg)
     for(std::vector<i2cpwm_board::Servo>::const_iterator sp = msg->servos.begin(); sp != msg->servos.end(); ++sp) {
         int servo = sp->servo;
         int value = sp->value;
-
+		//std::cout<<"servo "<<servo<<" value "<<value<<"\t";
         if ((value < 0) || (value > 4096)) {
             ROS_ERROR("Invalid PWM value %d :: PWM values must be between 0 and 4096", value);
             continue;
@@ -1239,7 +1237,6 @@ bool config_servos (i2cpwm_board::ServosConfig::Request &req, i2cpwm_board::Serv
 {
 	/* this service works on the active_board */
 	int i;
-	
 	res.error = 0;
 
 	if ((_active_board<1) || (_active_board>62)) {
@@ -1337,7 +1334,6 @@ bool config_servos (i2cpwm_board::ServosConfig::Request &req, i2cpwm_board::Serv
 bool config_drive_mode (i2cpwm_board::DriveMode::Request &req, i2cpwm_board::DriveMode::Response &res)
 {
 	res.error = 0;
-
 	int i;
 
 	if ((res.error = _config_drive_mode (req.mode, req.rpm, req.radius, req.track, req.scale)))
@@ -1595,7 +1591,6 @@ int main (int argc, char **argv)
 	ros::Subscriber drive_sub = 		n.subscribe 		("servos_drive", 500, 			servos_drive);			// the 'drive' topic will be used for continuous rotation aka drive servos controlled by Twist messages
 	
 	_load_params();	// loads parameters and performs initialization
-	
 
 	ros::spin();
 

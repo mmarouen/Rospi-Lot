@@ -1,1 +1,5 @@
 centerSteering: 289
+centerThrottle: 330
+rangeSteering: 90
+rangeThrottle: 30
+direction: 1

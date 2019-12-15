@@ -200,3 +200,6 @@ include_directories(
 include_directories(include ${catkin_INCLUDE_DIRS} ${i2cpwm_board_INCLUDE_DIRS})
 add_executable(pid_controller src/pid_controller.cpp)
 target_link_libraries(pid_controller ${catkin_LIBRARIES} ${i2cpwm_board_LIBRARIES})
+#include_directories(include ${catkin_INCLUDE_DIRS})
+#add_executable(pid_controller src/pid_controller.cpp)
+#target_link_libraries(pid_controller ${catkin_LIBRARIES})

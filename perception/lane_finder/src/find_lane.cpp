@@ -28,9 +28,6 @@ Publishes
 */
 
 cv_bridge::CvImagePtr imageptr;
-//int thd = 220;
-//int roiHeight = 100;
-//int roiWidth = 200;
 int thd, roiHeight, roiWidth, duration;
 
 std::vector<cv::Point> flatten(const std::vector<std::vector<cv::Point> > &orig)
@@ -48,7 +45,7 @@ void image_callback(const sensor_msgs::ImageConstPtr& msg)
 {
     try
     {
-        imageptr=cv_bridge::toCvCopy(msg, "bgr8");
+        imageptr=cv_bridge::toCvCopy(msg, "mono8");
     }
     catch (cv_bridge::Exception& e)
     {
@@ -59,9 +56,9 @@ void image_callback(const sensor_msgs::ImageConstPtr& msg)
 
 void processImage(cv_bridge::CvImagePtr& imgptr)
 {
-    cv::Mat processedIm;
-    cv::cvtColor(imgptr->image,processedIm,cv::COLOR_BGR2GRAY); //convert to grayscale
-    cv::equalizeHist( processedIm, processedIm ); //equalize histogram
+    cv::Mat processedIm=imgptr->image;
+    //cv::cvtColor(imgptr->image,processedIm,cv::COLOR_BGR2GRAY); //convert to grayscale
+    cv::equalizeHist( processedIm, processedIm); //equalize histogram
     cv::threshold(processedIm,processedIm,thd,255,cv::THRESH_BINARY); //binary thresholding
     //erode image
     int erosion_size = 1;
@@ -115,14 +112,12 @@ int main (int argc, char **argv)
     ros::NodeHandle n_params("~");
     n_params.param("duration", duration, (int)30);
 
-	ros::Subscriber image_sub = n.subscribe("/raspicam_node/image", 1,image_callback);	
-    ROS_INFO("> Lane subscriber correctly initialized");
+	ros::Subscriber image_sub = n.subscribe("/raspicam_node/image", 3,image_callback);	
+    //ROS_INFO("> Lane subscriber correctly initialized");
 	ros::Publisher ros_pub_lanes = n.advertise<sensor_msgs::Image>("lanes",1);
-    ROS_INFO("> Lane publisher correctly initialized");
+    //ROS_INFO("> Lane publisher correctly initialized");
     
-    ros::Rate loop_rate(1);
-    int count = 0;
-    //int duration =30;
+    ros::Rate loop_rate(10);
     time_t current=time(NULL);
 
     while (time(NULL)-current<duration)
@@ -131,11 +126,9 @@ int main (int argc, char **argv)
             processImage(imageptr);
             imageptr->encoding ="mono8";
             ros_pub_lanes.publish(imageptr->toImageMsg());
-
         }
         ros::spinOnce();
         loop_rate.sleep();
-        count++;
     }
     if(time(NULL)-current>=duration){
         ros::shutdown();

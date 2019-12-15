@@ -72,10 +72,8 @@ void generateHeading(cv_bridge::CvImagePtr& imgptr)
         cv::Point M(line[2]+(imgSize.height-roiHeight-line[3])*line[0]/line[1],imgSize.height-roiHeight);
         //generate heading
         yaw=-atan2(M.x-C.x,roiHeight);
-        std::cout<<"found points, yaw:"<<yaw<<std::endl;
     }else{
         yaw=0.0;
-        std::cout<<"no points found, yaw:"<<yaw<<std::endl;
 
     }
 }
@@ -93,31 +91,31 @@ int main (int argc, char **argv)
     ros::param::get("/planning/trajectory/idleSpeed",idleSpeed);
 
 	ros::Subscriber lanes_sub = n.subscribe("/perception/lanes/lanes", 1,lane_callback);	
-    ROS_INFO("> Trajectory subscriber correctly initialized");
+    //ROS_INFO("> Trajectory subscriber correctly initialized");
 	ros::Publisher pub_vel = n.advertise<geometry_msgs::Twist>("cmd_vel",1);
-    ROS_INFO("> Trajectory publisher correctly initialized");
+    //ROS_INFO("> Trajectory publisher correctly initialized");
     
-    ros::Rate loop_rate(1);
+    ros::Rate loop_rate(10);
     time_t current=time(NULL);
     geometry_msgs::Twist vel_msg;
 
     while (time(NULL)-current<duration)
     {
         if(imageptr){        
-            std::cout<<"time running"<<std::endl;
             generateHeading(imageptr);
             vel_msg.linear.x=speed;
-            vel_msg.angular.z=yaw*180/CV_PI;
+            vel_msg.angular.z=yaw*4/CV_PI;
+            //vel_msg.angular.z=0.0;
             pub_vel.publish(vel_msg);
         }
         ros::spinOnce();
         loop_rate.sleep();
     }
     if(time(NULL)-current>=duration){
-        std::cout<<"time is up!"<<std::endl;
-        vel_msg.linear.x=idleSpeed;
+        vel_msg.linear.x=0.0;
         vel_msg.angular.z=0.0;
         pub_vel.publish(vel_msg);
+        ros::spinOnce();
         ros::shutdown();
     }
 
