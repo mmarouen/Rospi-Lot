@@ -28,10 +28,7 @@ Publishes
 */
 
 cv_bridge::CvImagePtr imageptr;
-//int thd = 220;
-//int roiHeight = 100;
-//int roiWidth = 200;
-int thd, roiHeight, roiWidth;
+int thd, roiHeight, roiWidth, duration;
 
 std::vector<cv::Point> flatten(const std::vector<std::vector<cv::Point> > &orig)
 {   
@@ -48,7 +45,7 @@ void image_callback(const sensor_msgs::ImageConstPtr& msg)
 {
     try
     {
-        imageptr=cv_bridge::toCvCopy(msg, "bgr8");
+        imageptr=cv_bridge::toCvCopy(msg, "mono8");
     }
     catch (cv_bridge::Exception& e)
     {
@@ -59,9 +56,9 @@ void image_callback(const sensor_msgs::ImageConstPtr& msg)
 
 void processImage(cv_bridge::CvImagePtr& imgptr)
 {
-    cv::Mat processedIm;
-    cv::cvtColor(imgptr->image,processedIm,cv::COLOR_BGR2GRAY); //convert to grayscale
-    cv::equalizeHist( processedIm, processedIm ); //equalize histogram
+    cv::Mat processedIm=imgptr->image;
+    //cv::cvtColor(imgptr->image,processedIm,cv::COLOR_BGR2GRAY); //convert to grayscale
+    cv::equalizeHist( processedIm, processedIm); //equalize histogram
     cv::threshold(processedIm,processedIm,thd,255,cv::THRESH_BINARY); //binary thresholding
     //erode image
     int erosion_size = 1;
@@ -87,11 +84,20 @@ void processImage(cv_bridge::CvImagePtr& imgptr)
     //detect contours
     std::vector<std::vector<cv::Point> > contours;
     cv::findContours(roiImage,contours,cv::RETR_LIST,cv::CHAIN_APPROX_SIMPLE,offset);
-    std::vector<cv::Point> pts1;
-    pts1 = flatten(contours);
     //lane image
     cv::Mat res=cv::Mat::zeros(processedIm.size(), CV_8UC1);
     cv::drawContours(res,contours,-1,cv::Scalar(255),1);
+    //draw angle position (if debug)
+    /*
+    std::vector<cv::Point> pts1;
+    pts1 = flatten(contours);
+    cv::Vec4f line;
+    cv::fitLine(pts1,line,1,2,0.01,0.01);
+    cv::Point C(imgSize.width*0.5,imgSize.height-roiHeight);
+    cv::Point M(line[2]+(imgSize.height-roiHeight-line[3])*line[0]/line[1],imgSize.height-roiHeight);
+    float heading=-atan2(M.x-C.x,roiHeight);
+    cv::drawMarker(res,M,cv::Scalar(255),cv::MARKER_TILTED_CROSS,10);
+    */
     imgptr->image = res;
 }
 
@@ -100,19 +106,18 @@ int main (int argc, char **argv)
 	ros::init (argc, argv, "find_lane");
 
 	ros::NodeHandle n;
+    ros::param::get("/perception/lanes/roiHeight",roiHeight);
+    ros::param::get("/perception/lanes/roiWidth",roiWidth);
+    ros::param::get("/perception/lanes/thd",thd);
     ros::NodeHandle n_params("~");
-    n_params.param("thd", thd, (int)220);
-    n_params.param("roiHeight", roiHeight, (int)100);
-    n_params.param("roiWidth", roiWidth, (int)200);
+    n_params.param("duration", duration, (int)30);
 
-	ros::Subscriber image_sub = n.subscribe("/raspicam_node/image", 1,image_callback);	
-    ROS_INFO("> Lane subscriber correctly initialized");
+	ros::Subscriber image_sub = n.subscribe("/raspicam_node/image", 3,image_callback);	
+    //ROS_INFO("> Lane subscriber correctly initialized");
 	ros::Publisher ros_pub_lanes = n.advertise<sensor_msgs::Image>("lanes",1);
-    ROS_INFO("> Lane publisher correctly initialized");
+    //ROS_INFO("> Lane publisher correctly initialized");
     
-    ros::Rate loop_rate(1);
-    int count = 0;
-    int duration =20;
+    ros::Rate loop_rate(10);
     time_t current=time(NULL);
 
     while (time(NULL)-current<duration)
@@ -121,11 +126,12 @@ int main (int argc, char **argv)
             processImage(imageptr);
             imageptr->encoding ="mono8";
             ros_pub_lanes.publish(imageptr->toImageMsg());
-
         }
         ros::spinOnce();
         loop_rate.sleep();
-        count++;
+    }
+    if(time(NULL)-current>=duration){
+        ros::shutdown();
     }
 
   return 0;

@@ -48,7 +48,7 @@ class DkLowLevelCtrl():
         self._servo_msg = ServoArray()
         for i in range(2):
             self._servo_msg.servos.append(Servo())
-        self._ros_pub_servo_array = rospy.Publisher("/servos_absolute",ServoArray,queue_size=1)
+        self._ros_pub_servo_array = rospy.Publisher("servos_absolute",ServoArray,queue_size=1)
         rospy.loginfo("> Publisher correctly initialized")
 
         #--- Create the subscriber to the /cmd_vel topic
@@ -72,7 +72,7 @@ class DkLowLevelCtrl():
         self.actuators['throttle'].get_value_out(message.linear.x) #- positive fwd
         self.actuators['steering'].get_value_out(message.angular.z) #- positive right
 
-        rospy.loginfo("Got a command v= %2.1f s=%2.1f"%(message.linear.x,message.angular.z))
+        #rospy.loginfo("Got a command v= %2.1f s=%2.1f"%(message.linear.x,message.angular.z))
 
         #-- Publish the servo message
         self.send_servo_msg()
@@ -80,7 +80,7 @@ class DkLowLevelCtrl():
     def set_actuators_idle(self):
         self.actuators['throttle'].get_value_out(0) #-positive fwd
         self.actuators['steering'].get_value_out(0) #-positive right
-        rospy.loginfo("Setting actuators to idle")
+        #rospy.loginfo("Setting actuators to idle")
 
         #-- Publish the message using a function
         self.send_servo_msg()
@@ -93,7 +93,7 @@ class DkLowLevelCtrl():
         for actuator_name,servo_obj in self.actuators.iteritems():
             self._servo_msg.servos[servo_obj.id -1].servo = servo_obj.id
             self._servo_msg.servos[servo_obj.id -1].value = servo_obj.value_out
-            rospy.loginfo("Sending to %s command %d"%(actuator_name,servo_obj.value_out))
+            #rospy.loginfo("Sending to %s command %d"%(actuator_name,servo_obj.value_out))
         self._ros_pub_servo_array.publish(self._servo_msg)
     
     @property
@@ -106,7 +106,7 @@ class DkLowLevelCtrl():
         rate = rospy.Rate(10)
 
         while not rospy.is_shutdown():
-            print(str(self._last_time_cmd_rcv)+" controller connected: "+str(self.is_controller_connected))
+            #print(str(self._last_time_cmd_rcv)+" controller connected: "+str(self.is_controller_connected))
 
             if not self.is_controller_connected:
                 self.set_actuators_idle()

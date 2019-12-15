@@ -1,0 +1,14 @@
+<launch>
+  <arg name="runtime" default="20"/>
+
+  <include file="$(find i2cpwm_board)/launch/i2cpwm_node.launch"/>
+
+  <group ns="/control/pid">
+    <rosparam file="$(find pid_controller)/config/controlconfig.yaml" />
+    <node pkg="pid_controller" name="controller" type="pid_controller" output="screen">
+        <param name="duration" value="$(arg runtime)"/>
+    </node>
+  </group>
+
+
+</launch>

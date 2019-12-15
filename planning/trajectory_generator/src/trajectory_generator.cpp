@@ -26,8 +26,8 @@ Publishes
 */
 
 cv_bridge::CvImagePtr imageptr;
-float speed;
-int roiHeight;
+float speed,idleSpeed;
+int roiHeight,duration;
 float yaw;
 
 template<typename T>
@@ -63,14 +63,19 @@ void generateHeading(cv_bridge::CvImagePtr& imgptr)
     //fit line
     std::vector<cv::Point> pts;
     pts = flatten(contours);
-    cv::Vec4f line;
-    cv::fitLine(pts,line,1,2,0.01,0.01);
-    //find heading points O,M,C
-    cv::Point O(imgSize.width*0.5,imgSize.height);
-    cv::Point C(imgSize.width*0.5,imgSize.height-roiHeight);
-    cv::Point M(line[2]+(imgSize.height-roiHeight-line[3])*line[0]/line[1],imgSize.height-roiHeight);
-    //generate heading
-    float yaw=-atan2(M.x-C.x,roiHeight);
+    if(pts.size()>0){
+        cv::Vec4f line;
+        cv::fitLine(pts,line,1,2,0.01,0.01);
+        //find heading points O,M,C
+        cv::Point O(imgSize.width*0.5,imgSize.height);
+        cv::Point C(imgSize.width*0.5,imgSize.height-roiHeight);
+        cv::Point M(line[2]+(imgSize.height-roiHeight-line[3])*line[0]/line[1],imgSize.height-roiHeight);
+        //generate heading
+        yaw=-atan2(M.x-C.x,roiHeight);
+    }else{
+        yaw=0.0;
+
+    }
 }
 
 int main (int argc, char **argv)
@@ -79,29 +84,39 @@ int main (int argc, char **argv)
 
 	ros::NodeHandle n;
     ros::NodeHandle n_params("~");
-    n_params.param("speed", speed, (float)250);
-    n_params.param("roiHeight", roiHeight, (int)100);
+    n_params.param("duration", duration, (int)30);
 
-	ros::Subscriber lanes_sub = n.subscribe("lanes", 1,lane_callback);	
-    ROS_INFO("> Trajectory subscriber correctly initialized");
+    ros::param::get("/perception/lanes/roiHeight",roiHeight);
+    ros::param::get("/planning/trajectory/cruiseSpeed",speed);
+    ros::param::get("/planning/trajectory/idleSpeed",idleSpeed);
+
+	ros::Subscriber lanes_sub = n.subscribe("/perception/lanes/lanes", 1,lane_callback);	
+    //ROS_INFO("> Trajectory subscriber correctly initialized");
 	ros::Publisher pub_vel = n.advertise<geometry_msgs::Twist>("cmd_vel",1);
-    ROS_INFO("> Trajectory publisher correctly initialized");
+    //ROS_INFO("> Trajectory publisher correctly initialized");
     
-    ros::Rate loop_rate(1);
-    int duration =20;
+    ros::Rate loop_rate(10);
     time_t current=time(NULL);
     geometry_msgs::Twist vel_msg;
 
     while (time(NULL)-current<duration)
     {
-        if(imageptr){
+        if(imageptr){        
             generateHeading(imageptr);
             vel_msg.linear.x=speed;
-            vel_msg.angular.z=yaw*180/CV_PI;
+            vel_msg.angular.z=yaw*4/CV_PI;
+            //vel_msg.angular.z=0.0;
             pub_vel.publish(vel_msg);
         }
         ros::spinOnce();
         loop_rate.sleep();
+    }
+    if(time(NULL)-current>=duration){
+        vel_msg.linear.x=0.0;
+        vel_msg.angular.z=0.0;
+        pub_vel.publish(vel_msg);
+        ros::spinOnce();
+        ros::shutdown();
     }
 
   return 0;
