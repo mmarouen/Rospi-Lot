@@ -74,7 +74,6 @@ void generateHeading(cv_bridge::CvImagePtr& imgptr)
         yaw=-atan2(M.x-C.x,roiHeight);
     }else{
         yaw=0.0;
-
     }
 }
 
@@ -104,7 +103,7 @@ int main (int argc, char **argv)
         if(imageptr){        
             generateHeading(imageptr);
             vel_msg.linear.x=speed;
-            vel_msg.angular.z=yaw*4/CV_PI;
+            vel_msg.angular.z=yaw/CV_PI;
             //vel_msg.angular.z=0.0;
             pub_vel.publish(vel_msg);
         }
