@@ -60,7 +60,6 @@ void pidControl(const float alpha)
     double integral=integral_init+error*sample_time;
     double deriv = (error-last_error)/sample_time;
     current_alpha = kp * error + ki * integral + kd * deriv;
-    std::cout<<"sample time "<<sample_time<<" current_alpha "<<current_alpha<<std::endl;
     //update parameters
     last_time=current_time;
     integral_init = integral;
@@ -80,10 +79,8 @@ void yaw_callback(const geometry_msgs::Twist& msg)
     received=true;
     pidControl(msg.angular.z);
     float servo2 = current_alpha*0.5*steering_range+steering_center_val;
-    std::cout<<"msg.z "<<msg.angular.z<<" servo "<<servo2<<std::endl;;
     if(servo2>(steering_center_val+0.5*steering_range)) servo2=steering_center_val+0.5*steering_range;
     if(servo2<(steering_center_val-0.5*steering_range)) servo2=steering_center_val-0.5*steering_range;
-    //std::cout<<"servo2 "<<servo2<<" ";
     steering.servo =2;
     steering.value = servo2;
     throttle.servo =1;
